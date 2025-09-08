@@ -61,8 +61,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       // Show chosen pet
       let imgSrc = petChoice === "plant"
-        ? "monster_image/Plant slime-1.png"
-        : "monster_image/Shadow slime-1.png";
+        ? "monster_image/plant slime-1.png"
+        : "monster_image/shadow slime-1.png";
       let label = petChoice === "plant" ? "Plant Slime" : "Shadow Slime";
       let jpLabel = petChoice === "plant" ? "植物スライム" : "影スライム";
       petContainer.innerHTML = `
