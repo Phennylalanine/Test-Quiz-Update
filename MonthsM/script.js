@@ -219,13 +219,13 @@ function updateStats() {
 }
 
 function saveProgress() {
-  localStorage.setItem("MonthMxp", xp);
-  localStorage.setItem("MonthtMlevel", level);
+  localStorage.setItem("MonthsMxp", xp);
+  localStorage.setItem("MonthtsMlevel", level);
 }
 
 function loadProgress() {
-  const savedXP = localStorage.getItem("MonthMxp");
-  const savedLevel = localStorage.getItem("MonthMlevel");
+  const savedXP = localStorage.getItem("MonthsMxp");
+  const savedLevel = localStorage.getItem("MonthsMlevel");
 
   if (savedXP !== null) xp = parseInt(savedXP, 10);
   if (savedLevel !== null) level = parseInt(savedLevel, 10);
