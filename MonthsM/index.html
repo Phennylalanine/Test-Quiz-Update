@@ -8,24 +8,23 @@
 <body>
 
   <!-- Start Screen -->
-  <div id="startScreen" class="screen active">
-    <h1>Welcome to the Quiz!</h1>
-    <button id="startBtn">Start Quiz</button>
-  </div>
+<div id="startScreen" class="screen active">
+  <h1>Welcome to the Quiz</h1>
+  <button id="startBtn">Start Quiz</button>
+</div>
 
-  <!-- Quiz Screen -->
-  <div id="quizScreen" class="screen">
-    <!-- Stats -->
-    <div id="stats">
-      <p>Points: <span id="points">0</span></p>
-      <p>Combo: <span id="combo">0</span></p>
-      <p>Quiz Level: <span id="level">1</span></p>
+<!-- Quiz Screen -->
+<div id="quizScreen" class="screen">
+  <div id="statsPanel">
+    <div><strong>Level:</strong> <span id="quizLevel">1</span></div>
+    <div class="level-section">
       <div id="xpBarContainer">
         <div id="xpBar"></div>
       </div>
-      <p id="xpText">0 / 3</p>
+      <span id="xpText">0 / 10 XP</span>
     </div>
-
+    <div><strong>Score:</strong> <span id="quizScore">0</span></div>
+  </div>
     <!-- Question -->
     <div id="questionBox">
       <p id="jpText">日本語</p>
