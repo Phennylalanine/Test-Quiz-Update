@@ -52,6 +52,16 @@ nextBtn.addEventListener("click", () => {
   }
 });
 
+answerInput.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    if (!answered) {
+      checkAnswer();
+    } else if (!nextBtn.disabled) {
+      nextBtn.click();
+    }
+  }
+});
+
 tryAgainBtn.addEventListener("click", tryAgain);
 
 closeModalBtn.addEventListener("click", () => {
@@ -102,69 +112,44 @@ function loadNextQuestion() {
 
   speak(question.en);
 
-  const correctAnswer = question.en;
-  const wrongAnswers = questions.filter(q => q.en !== correctAnswer).map(q => q.en);
-  shuffleArray(wrongAnswers);
-
-  const options = [correctAnswer, ...wrongAnswers.slice(0, 3)];
-  shuffleArray(options);
-
+  // Hide choices for typing-only mode
   choicesContainer.innerHTML = "";
-  options.forEach(opt => {
-    const span = document.createElement("span");
-    span.textContent = opt;
-    span.className = "choice-option";
-    span.style.padding = "5px 10px";
-    span.style.border = "1px solid #ccc";
-    span.style.borderRadius = "5px";
-    span.style.background = "#f9f9f9";
-    span.style.margin = "5px";
-    span.style.userSelect = "none";
-    span.style.cursor = "pointer";
-    // Add click handler for multiple choice selection
-    span.onclick = function() {
-      if (!answered) {
-        checkAnswer(opt); // Pass the selected option
-      }
-    };
-    choicesContainer.appendChild(span);
-  });
 
-  if (answerInput) {
-    answerInput.value = "";
-    answerInput.disabled = true;  // Disable text input for multiple choice
-  }
+  answerInput.value = "";
+  answerInput.disabled = false;
+  answerInput.focus();
+
   feedback.textContent = "";
   feedback.style.color = "black";
+
   nextBtn.disabled = true;
   tryAgainBtn.style.display = "none";
   answered = false;
 }
 
-// Modified checkAnswer to receive the chosen answer
-function checkAnswer(selectedAnswer) {
+function checkAnswer() {
   if (answered) return;
   answered = true;
 
+  const userAnswer = answerInput.value.trim();
   const correctAnswer = questions[currentQuestionIndex].en;
 
-  if (selectedAnswer === correctAnswer) {
+  if (userAnswer === correctAnswer) {
     feedback.innerHTML = "✔️ <strong>Correct!</strong>";
     feedback.style.color = "green";
     combo++;
     score += 1;
 
+    // XP bonus logic with combo
     const xpBonus = combo >= 15 && combo % 5 === 0 ? (combo / 5) - 1 : 1;
     gainXP(xpBonus);
     showFloatingXP(`+${xpBonus} XP`);
 
     updateStats();
 
+    answerInput.disabled = true;
     nextBtn.disabled = false;
     tryAgainBtn.style.display = "none";
-
-    // Highlight correct option
-    highlightChoice(selectedAnswer, true);
   } else {
     feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>Correct answer: <span style="color: green;">${correctAnswer}</span>`;
     feedback.style.color = "red";
@@ -172,36 +157,19 @@ function checkAnswer(selectedAnswer) {
 
     updateStats();
 
+    answerInput.disabled = true;
     nextBtn.disabled = true;
     tryAgainBtn.style.display = "inline-block";
-
-    // Highlight wrong and correct options
-    highlightChoice(selectedAnswer, false, correctAnswer);
   }
-}
-
-function highlightChoice(selected, isCorrect, correctAnswer) {
-  Array.from(choicesContainer.children).forEach(span => {
-    if (span.textContent === selected) {
-      span.style.background = isCorrect ? "#d4edda" : "#f8d7da";
-      span.style.borderColor = isCorrect ? "#28a745" : "#dc3545";
-    } else if (!isCorrect && span.textContent === correctAnswer) {
-      span.style.background = "#d4edda";
-      span.style.borderColor = "#28a745";
-    }
-    span.style.pointerEvents = "none";
-  });
 }
 
 function tryAgain() {
   feedback.textContent = "";
   feedback.style.color = "black";
-  // Re-enable choices for retry
-  Array.from(choicesContainer.children).forEach(span => {
-    span.style.background = "#f9f9f9";
-    span.style.borderColor = "#ccc";
-    span.style.pointerEvents = "auto";
-  });
+  answerInput.disabled = false;
+  answerInput.value = "";
+  answerInput.focus();
+
   tryAgainBtn.style.display = "none";
   nextBtn.disabled = true;
   answered = false;
