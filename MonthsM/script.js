@@ -244,4 +244,108 @@ function loadProgress() {
   if (savedXP !== null) xp = parseInt(savedXP, 10);
   if (savedLevel !== null) level = parseInt(savedLevel, 10);
 
-  u
+  updateStats();
+}
+
+// ----------------------
+// CONFETTI
+// ----------------------
+function triggerConfetti() {
+  for (let i = 0; i < 100; i++) {
+    confettiParticles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * -20,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 5 + 1,
+      color: "hsl(" + Math.floor(Math.random() * 360) + ", 100%, 70%)",
+      tilt: Math.random() * 10 - 10,
+    });
+  }
+}
+
+function drawConfetti() {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiParticles.forEach((p) => {
+    ctx.beginPath();
+    ctx.fillStyle = p.color;
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+    ctx.fill();
+  });
+  updateConfetti();
+}
+
+function updateConfetti() {
+  for (let i = 0; i < confettiParticles.length; i++) {
+    const p = confettiParticles[i];
+    p.y += p.d;
+    p.x += Math.sin(p.tilt) * 2;
+
+    if (p.y > confettiCanvas.height) {
+      confettiParticles.splice(i, 1);
+      i--;
+    }
+  }
+}
+
+function resizeCanvas() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+setInterval(drawConfetti, 30);
+
+// ----------------------
+// SPEECH
+// ----------------------
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-UK";
+  speechSynthesis.speak(utterance);
+}
+
+function showFloatingXP(text) {
+  const xpElem = document.createElement("div");
+  xpElem.textContent = text;
+  xpElem.className = "floating-xp";
+  xpElem.style.left = `${Math.random() * 80 + 10}%`;
+  xpElem.style.top = "50%";
+  document.body.appendChild(xpElem);
+  setTimeout(() => xpElem.remove(), 1500);
+}
+
+// ----------------------
+// PET EVOLUTION LOGIC
+// ----------------------
+function checkPetEvolution() {
+  const overallLevel = parseInt(localStorage.getItem("overallLevel")) || 0;
+  const petStage = localStorage.getItem("petStage") || "0"; // 0 = none, 1 = first evo, 2 = second evo
+
+  if (overallLevel >= 3 && petStage === "0") {
+    // First evolution choice
+    petModalTitle.textContent = "🎉 Your Egg is Hatching!";
+    petModalDesc.textContent = "Choose your first evolution!";
+    petModal.style.display = "block";
+
+    petChoices.forEach(choice => {
+      choice.onclick = () => {
+        localStorage.setItem("petChoiceStage1", choice.dataset.pet);
+        localStorage.setItem("petStage", "1");
+        petModal.style.display = "none";
+      };
+    });
+  } else if (overallLevel >= 6 && petStage === "1") {
+    // Second evolution choice
+    petModalTitle.textContent = "🌟 Your Pet is Evolving Again!";
+    petModalDesc.textContent = "Choose your second evolution!";
+    petModal.style.display = "block";
+
+    petChoices.forEach(choice => {
+      choice.onclick = () => {
+        localStorage.setItem("petChoiceStage2", choice.dataset.pet);
+        localStorage.setItem("petStage", "2");
+        petModal.style.display = "none";
+      };
+    });
+  }
+}
