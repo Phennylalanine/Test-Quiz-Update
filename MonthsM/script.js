@@ -112,8 +112,28 @@ function loadNextQuestion() {
 
   speak(question.en);
 
-  // Hide choices for typing-only mode
-  choicesContainer.innerHTML = "";
+  // Prepare answer options
+  const correctAnswer = question.en;
+  const wrongAnswers = questions.filter(q => q.en !== correctAnswer).map(q => q.en);
+  shuffleArray(wrongAnswers);
+
+  const options = [correctAnswer, ...wrongAnswers.slice(0, 3)];
+  shuffleArray(options);
+
+  // Display options as plain text
+  choicesContainer.innerHTML = "<strong>Choices:</strong><br>";
+  options.forEach(opt => {
+    const span = document.createElement("span");
+    span.textContent = opt;
+    span.className = "choice-option";
+    span.style.padding = "5px 10px";
+    span.style.border = "1px solid #ccc";
+    span.style.borderRadius = "5px";
+    span.style.background = "#f9f9f9";
+    span.style.margin = "5px";
+    span.style.userSelect = "none";
+    choicesContainer.appendChild(span);
+  });
 
   answerInput.value = "";
   answerInput.disabled = false;
@@ -134,13 +154,13 @@ function checkAnswer() {
   const userAnswer = answerInput.value.trim();
   const correctAnswer = questions[currentQuestionIndex].en;
 
-  if (userAnswer === correctAnswer) {
+  // Compare case-insensitive, trim spaces
+  if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
     feedback.innerHTML = "✔️ <strong>Correct!</strong>";
     feedback.style.color = "green";
     combo++;
     score += 1;
 
-    // XP bonus logic with combo
     const xpBonus = combo >= 15 && combo % 5 === 0 ? (combo / 5) - 1 : 1;
     gainXP(xpBonus);
     showFloatingXP(`+${xpBonus} XP`);
