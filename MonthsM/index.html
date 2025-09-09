@@ -8,23 +8,27 @@
 <body>
 
   <!-- Start Screen -->
-<div id="startScreen" class="screen active">
-  <h1>Welcome to the Quiz</h1>
-  <button id="startBtn">Start Quiz</button>
-</div>
-
-<!-- Quiz Screen -->
-<div id="quizScreen" class="screen">
-  <div id="statsPanel">
-    <div><strong>Level:</strong> <span id="quizLevel">1</span></div>
-    <div class="level-section">
-      <div id="xpBarContainer">
-        <div id="xpBar"></div>
-      </div>
-      <span id="xpText">0 / 10 XP</span>
-    </div>
-    <div><strong>Score:</strong> <span id="quizScore">0</span></div>
+  <div id="startScreen" class="screen active">
+    <h1>Welcome to the Quiz</h1>
+    <button id="startBtn">Start Quiz</button>
   </div>
+
+  <!-- Quiz Screen -->
+  <div id="quizScreen" class="screen">
+    <div id="statsPanel">
+      <div><strong>Level:</strong> <span id="quizLevel">1</span></div>
+
+      <div class="level-section">
+        <div id="xpBarContainer">
+          <div id="xpBar"></div>
+        </div>
+        <span id="xpText">0 / 3 XP</span>
+      </div>
+
+      <div><strong>Score:</strong> <span id="quizScore">0</span></div>
+      <div><strong>Combo:</strong> <span id="comboDisplay">0</span></div>
+    </div>
+
     <!-- Question -->
     <div id="questionBox">
       <p id="jpText">日本語</p>
@@ -47,7 +51,7 @@
   <!-- PET EVOLUTION MODAL -->
   <div id="petModal" class="modal">
     <div class="modal-content">
-      <span class="close">&times;</span>
+      <button class="close" aria-label="Close">&times;</button>
 
       <h2 id="petModalTitle">Choose your pet!</h2>
       <p id="petModalDesc">Pick your companion.</p>
@@ -57,6 +61,9 @@
         <div class="pet-choice" data-pet="Phoenix">🔥 Phoenix</div>
         <div class="pet-choice" data-pet="Wolf">🐺 Wolf</div>
       </div>
+
+      <!-- Button appears when level milestones are hit -->
+      <button id="goHomepageBtn" style="display:none;">Go to homepage</button>
     </div>
   </div>
 
