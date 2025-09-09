@@ -120,7 +120,7 @@ function loadNextQuestion() {
   const options = [correctAnswer, ...wrongAnswers.slice(0, 3)];
   shuffleArray(options);
 
-  // Display options as plain text
+  // Display options as plain text (not clickable)
   choicesContainer.innerHTML = "<strong>Choices:</strong><br>";
   options.forEach(opt => {
     const span = document.createElement("span");
@@ -151,11 +151,13 @@ function checkAnswer() {
   if (answered) return;
   answered = true;
 
-  const userAnswer = answerInput.value.trim();
-  const correctAnswer = questions[currentQuestionIndex].en;
+  // FIX: normalize answers for comparison
+  const userAnswer = answerInput.value.trim().toLowerCase();
+  const correctAnswer = questions[currentQuestionIndex].en.trim().toLowerCase();
 
-  // Compare case-insensitive, trim spaces
-  if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+  console.log("User:", `"${userAnswer}"`, "Correct:", `"${correctAnswer}"`);
+
+  if (userAnswer === correctAnswer) {
     feedback.innerHTML = "✔️ <strong>Correct!</strong>";
     feedback.style.color = "green";
     combo++;
@@ -171,7 +173,8 @@ function checkAnswer() {
     nextBtn.disabled = false;
     tryAgainBtn.style.display = "none";
   } else {
-    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>Correct answer: <span style="color: green;">${correctAnswer}</span>`;
+    const correctDisplay = questions[currentQuestionIndex].en.trim();
+    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>Correct answer: <span style="color: green;">${correctDisplay}</span>`;
     feedback.style.color = "red";
     combo = 0;
 
