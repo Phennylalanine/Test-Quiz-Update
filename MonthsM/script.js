@@ -59,7 +59,7 @@ tryAgainBtn.addEventListener("click", tryAgain);
 // Modal close and homepage button
 closeModalBtn.onclick = () => (milestoneModal.style.display = 'none');
 goHomepageBtn.onclick = () => {
-  window.open('https://phennylalanine.github.io/Yach-5-Quiz-Home/', '_blank');
+  window.open('https://phennylalanine.github.io/Test-Quiz-Update/', '_blank');
   milestoneModal.style.display = 'none';
 };
 window.onclick = function(event) {
