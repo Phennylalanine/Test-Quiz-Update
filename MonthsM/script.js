@@ -24,6 +24,10 @@ const levelEl = document.getElementById("level");
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
 
+if (getOverallLevel() >= 5 && !localStorage.getItem('petChoice')) {
+  showPetSelectionModal(); // <-- your function that shows monster choices
+}
+
 // Confetti
 const confettiCanvas = document.getElementById("confettiCanvas");
 const ctx = confettiCanvas.getContext("2d");
