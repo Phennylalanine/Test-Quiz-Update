@@ -228,7 +228,7 @@ function saveProgress() {
 }
 
 function loadProgress() {
-  const savedXP = localStorage.getItem("EventMxpp");
+  const savedXP = localStorage.getItem("EventMxp");
   const savedLevel = localStorage.getItem("EventMlevel");
 
   if (savedXP !== null) xp = parseInt(savedXP, 10);
