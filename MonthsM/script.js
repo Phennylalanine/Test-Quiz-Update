@@ -29,6 +29,62 @@ const confettiCanvas = document.getElementById("confettiCanvas");
 const ctx = confettiCanvas.getContext("2d");
 let confettiParticles = [];
 
+// ---- PET MODAL LOGIC ----
+const petModal = document.getElementById("petModal");
+const closeBtns = petModal ? petModal.querySelectorAll(".close") : [];
+const petChoices = petModal ? petModal.querySelectorAll(".pet-choice") : [];
+const petChoiceKey = "petChoice";
+
+// Helper: open modal
+function openPetModal() {
+  if (petModal) petModal.style.display = "block";
+}
+
+// Helper: close modal
+function closePetModal() {
+  if (petModal) petModal.style.display = "none";
+}
+
+// Close button listeners
+closeBtns.forEach(btn => {
+  btn.addEventListener("click", closePetModal);
+});
+
+// Handle pet selection
+petChoices.forEach(choice => {
+  choice.addEventListener("click", () => {
+    const pet = choice.getAttribute("data-pet");
+    localStorage.setItem(petChoiceKey, pet);
+    alert(`You chose: ${pet}!`);
+    closePetModal();
+  });
+});
+
+// Check overall level from homepage data
+function getOverallLevel() {
+  const quizData = [
+    { key: "monthsSlevel", multiplier: 0.2 },
+    { key: "EventSlevel", multiplier: 0.2 },
+    { key: "monthsMlevel", multiplier: 0.5 },
+    { key: "EventMlevel", multiplier: 0.5 },
+  ];
+  return Math.round(
+    quizData.reduce((sum, { key, multiplier }) => {
+      const value = parseInt(localStorage.getItem(key)) || 0;
+      return sum + value * multiplier;
+    }, 0)
+  );
+}
+
+// Run modal check on quiz load
+function checkPetModal() {
+  const overallLevel = getOverallLevel();
+  const alreadyChosen = localStorage.getItem(petChoiceKey);
+  if ((overallLevel === 3 || overallLevel === 6) && !alreadyChosen) {
+    openPetModal();
+  }
+}
+
 // Event Listeners
 document.getElementById("startBtn").addEventListener("click", startQuiz);
 nextBtn.addEventListener("click", () => {
@@ -52,6 +108,7 @@ tryAgainBtn.addEventListener("click", tryAgain);
 
 // Load progress
 loadProgress();
+checkPetModal(); // <-- check when page loads
 
 function startQuiz() {
   document.getElementById("startScreen").classList.remove("active");
@@ -85,7 +142,6 @@ function loadNextQuestion() {
 
   const question = questions[currentQuestionIndex];
   jpText.textContent = question.jp;
-  // Removed the line: enText.textContent = question.en;
 
   speak(question.en);
 
@@ -201,6 +257,9 @@ function gainXP(amount) {
 
   saveProgress();
   updateStats();
+
+  // Check modal again in case overall level has changed since last save
+  checkPetModal();
 }
 
 function xpToNextLevel(currentLevel) {
