@@ -52,16 +52,6 @@ nextBtn.addEventListener("click", () => {
   }
 });
 
-answerInput.addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    if (!answered) {
-      checkAnswer();
-    } else if (!nextBtn.disabled) {
-      nextBtn.click();
-    }
-  }
-});
-
 tryAgainBtn.addEventListener("click", tryAgain);
 
 closeModalBtn.addEventListener("click", () => {
@@ -130,29 +120,35 @@ function loadNextQuestion() {
     span.style.background = "#f9f9f9";
     span.style.margin = "5px";
     span.style.userSelect = "none";
+    span.style.cursor = "pointer";
+    // Add click handler for multiple choice selection
+    span.onclick = function() {
+      if (!answered) {
+        checkAnswer(opt); // Pass the selected option
+      }
+    };
     choicesContainer.appendChild(span);
   });
 
-  answerInput.value = "";
-  answerInput.disabled = false;
-  answerInput.focus();
-
+  if (answerInput) {
+    answerInput.value = "";
+    answerInput.disabled = true;  // Disable text input for multiple choice
+  }
   feedback.textContent = "";
   feedback.style.color = "black";
-
   nextBtn.disabled = true;
   tryAgainBtn.style.display = "none";
   answered = false;
 }
 
-function checkAnswer() {
+// Modified checkAnswer to receive the chosen answer
+function checkAnswer(selectedAnswer) {
   if (answered) return;
   answered = true;
 
-  const userAnswer = answerInput.value.trim();
   const correctAnswer = questions[currentQuestionIndex].en;
 
-  if (userAnswer === correctAnswer) {
+  if (selectedAnswer === correctAnswer) {
     feedback.innerHTML = "✔️ <strong>Correct!</strong>";
     feedback.style.color = "green";
     combo++;
@@ -164,9 +160,11 @@ function checkAnswer() {
 
     updateStats();
 
-    answerInput.disabled = true;
     nextBtn.disabled = false;
     tryAgainBtn.style.display = "none";
+
+    // Highlight correct option
+    highlightChoice(selectedAnswer, true);
   } else {
     feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>Correct answer: <span style="color: green;">${correctAnswer}</span>`;
     feedback.style.color = "red";
@@ -174,19 +172,36 @@ function checkAnswer() {
 
     updateStats();
 
-    answerInput.disabled = true;
     nextBtn.disabled = true;
     tryAgainBtn.style.display = "inline-block";
+
+    // Highlight wrong and correct options
+    highlightChoice(selectedAnswer, false, correctAnswer);
   }
+}
+
+function highlightChoice(selected, isCorrect, correctAnswer) {
+  Array.from(choicesContainer.children).forEach(span => {
+    if (span.textContent === selected) {
+      span.style.background = isCorrect ? "#d4edda" : "#f8d7da";
+      span.style.borderColor = isCorrect ? "#28a745" : "#dc3545";
+    } else if (!isCorrect && span.textContent === correctAnswer) {
+      span.style.background = "#d4edda";
+      span.style.borderColor = "#28a745";
+    }
+    span.style.pointerEvents = "none";
+  });
 }
 
 function tryAgain() {
   feedback.textContent = "";
   feedback.style.color = "black";
-  answerInput.disabled = false;
-  answerInput.value = "";
-  answerInput.focus();
-
+  // Re-enable choices for retry
+  Array.from(choicesContainer.children).forEach(span => {
+    span.style.background = "#f9f9f9";
+    span.style.borderColor = "#ccc";
+    span.style.pointerEvents = "auto";
+  });
   tryAgainBtn.style.display = "none";
   nextBtn.disabled = true;
   answered = false;
@@ -347,5 +362,15 @@ function checkPetEvolution() {
         petModal.style.display = "none";
       };
     });
+  }
+}
+
+// ----------------------
+// UTILS
+// ----------------------
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
 }
