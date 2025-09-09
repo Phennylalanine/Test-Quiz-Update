@@ -22,25 +22,23 @@ window.addEventListener("DOMContentLoaded", () => {
     span.textContent = `(Level: ${levelValue})`;
   });
 
-  // ---- PET LOGIC ----
+  // ---- PET LOGIC (based on overall level) ----
   const petContainer = document.getElementById("petContainer");
-  petContainer.innerHTML = "";
-
-  // Helper: Get/set choice from localStorage
-  const petChoiceKey = "petChoice"; // stores "plant" or "shadow"
+  const petChoiceKey = "petChoice"; // store choice
   let petChoice = localStorage.getItem(petChoiceKey);
 
-  if (overallLevel < 2) {
-    // Not enough level yet
+  petContainer.innerHTML = "";
+
+  if (overallLevel < 3) {
     petContainer.innerHTML = `<p>Keep playing quizzes to find a mysterious egg!</p>`;
-  } else if (overallLevel >= 2 && overallLevel < 5) {
+  } else if (overallLevel >= 3 && overallLevel <= 5) {
     // Show egg
     petContainer.innerHTML = `
       <img src="monster_image/shadow-plant-egg.png" alt="Egg">
       <p>Oh you found an egg! What could be inside?</p>
       <div class="jp">おお！卵を見つけたね！中には何が入っているのかな？</div>
     `;
-  } else if (overallLevel >= 5) {
+  } else if (overallLevel > 5) {
     // Hatching: Has pet choice?
     if (!petChoice) {
       petContainer.innerHTML = `
