@@ -1,4 +1,6 @@
-// Quiz State Variables
+// ----------------------
+// QUIZ STATE VARIABLES
+// ----------------------
 let currentQuestionIndex = 0;
 let score = 0;
 let combo = 0;
@@ -9,7 +11,9 @@ let answered = false;
 
 const maxComboForBonus = 5;
 
-// DOM Elements
+// ----------------------
+// DOM ELEMENTS
+// ----------------------
 const jpText = document.getElementById("jpText");
 const enText = document.getElementById("enText");
 const answerInput = document.getElementById("answerInput");
@@ -29,64 +33,18 @@ const confettiCanvas = document.getElementById("confettiCanvas");
 const ctx = confettiCanvas.getContext("2d");
 let confettiParticles = [];
 
-// ---- PET MODAL LOGIC ----
+// Pet modal
 const petModal = document.getElementById("petModal");
-const closeBtns = petModal ? petModal.querySelectorAll(".close") : [];
-const petChoices = petModal ? petModal.querySelectorAll(".pet-choice") : [];
-const petChoiceKey = "petChoice";
+const closeModalBtn = petModal.querySelector(".close");
+const petChoices = petModal.querySelectorAll(".pet-choice");
+const petModalTitle = document.getElementById("petModalTitle");
+const petModalDesc = document.getElementById("petModalDesc");
 
-// Helper: open modal
-function openPetModal() {
-  if (petModal) petModal.style.display = "block";
-}
-
-// Helper: close modal
-function closePetModal() {
-  if (petModal) petModal.style.display = "none";
-}
-
-// Close button listeners
-closeBtns.forEach(btn => {
-  btn.addEventListener("click", closePetModal);
-});
-
-// Handle pet selection
-petChoices.forEach(choice => {
-  choice.addEventListener("click", () => {
-    const pet = choice.getAttribute("data-pet");
-    localStorage.setItem(petChoiceKey, pet);
-    alert(`You chose: ${pet}!`);
-    closePetModal();
-  });
-});
-
-// Check overall level from homepage data
-function getOverallLevel() {
-  const quizData = [
-    { key: "monthsSlevel", multiplier: 0.2 },
-    { key: "EventSlevel", multiplier: 0.2 },
-    { key: "monthsMlevel", multiplier: 0.5 },
-    { key: "EventMlevel", multiplier: 0.5 },
-  ];
-  return Math.round(
-    quizData.reduce((sum, { key, multiplier }) => {
-      const value = parseInt(localStorage.getItem(key)) || 0;
-      return sum + value * multiplier;
-    }, 0)
-  );
-}
-
-// Run modal check on quiz load
-function checkPetModal() {
-  const overallLevel = getOverallLevel();
-  const alreadyChosen = localStorage.getItem(petChoiceKey);
-  if ((overallLevel === 3 || overallLevel === 6) && !alreadyChosen) {
-    openPetModal();
-  }
-}
-
-// Event Listeners
+// ----------------------
+// EVENT LISTENERS
+// ----------------------
 document.getElementById("startBtn").addEventListener("click", startQuiz);
+
 nextBtn.addEventListener("click", () => {
   if (answered) {
     currentQuestionIndex++;
@@ -106,10 +64,19 @@ answerInput.addEventListener("keydown", function (e) {
 
 tryAgainBtn.addEventListener("click", tryAgain);
 
-// Load progress
-loadProgress();
-checkPetModal(); // <-- check when page loads
+closeModalBtn.addEventListener("click", () => {
+  petModal.style.display = "none";
+});
 
+// ----------------------
+// LOAD PROGRESS
+// ----------------------
+loadProgress();
+checkPetEvolution(); // check at page load if modal should appear
+
+// ----------------------
+// QUIZ FUNCTIONS
+// ----------------------
 function startQuiz() {
   document.getElementById("startScreen").classList.remove("active");
   document.getElementById("quizScreen").classList.add("active");
@@ -201,23 +168,7 @@ function checkAnswer() {
     nextBtn.disabled = false;
     tryAgainBtn.style.display = "none";
   } else {
-    let comparison = "";
-    const maxLength = Math.max(userAnswer.length, correctAnswer.length);
-
-    for (let i = 0; i < maxLength; i++) {
-      const userChar = userAnswer[i] || "";
-      const correctChar = correctAnswer[i] || "";
-
-      if (userChar === correctChar) {
-        comparison += `<span style="color: green;">${correctChar}</span>`;
-      } else if (userChar && correctChar) {
-        comparison += `<span style="color: red;">${userChar}</span>`;
-      } else if (!userChar) {
-        comparison += `<span style="color: gray;">_</span>`;
-      }
-    }
-
-    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>Your answer: <code>${comparison}</code><br>Correct answer: <span style="color: green;">${correctAnswer}</span>`;
+    feedback.innerHTML = `✖️ <strong>Wrong!</strong><br>Correct answer: <span style="color: green;">${correctAnswer}</span>`;
     feedback.style.color = "red";
     combo = 0;
 
@@ -241,6 +192,9 @@ function tryAgain() {
   answered = false;
 }
 
+// ----------------------
+// XP & STATS
+// ----------------------
 function gainXP(amount) {
   let levelBefore = level;
   xp += amount;
@@ -257,9 +211,6 @@ function gainXP(amount) {
 
   saveProgress();
   updateStats();
-
-  // Check modal again in case overall level has changed since last save
-  checkPetModal();
 }
 
 function xpToNextLevel(currentLevel) {
@@ -287,79 +238,10 @@ function saveProgress() {
 }
 
 function loadProgress() {
-  const savedXP = localStorage.getItem("EventMxpp");
+  const savedXP = localStorage.getItem("EventMxp");
   const savedLevel = localStorage.getItem("EventMlevel");
 
   if (savedXP !== null) xp = parseInt(savedXP, 10);
   if (savedLevel !== null) level = parseInt(savedLevel, 10);
 
-  updateStats();
-}
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-UK";
-  speechSynthesis.speak(utterance);
-}
-
-function showFloatingXP(text) {
-  const xpElem = document.createElement("div");
-  xpElem.textContent = text;
-  xpElem.className = "floating-xp";
-  xpElem.style.left = `${Math.random() * 80 + 10}%`;
-  xpElem.style.top = "50%";
-  document.body.appendChild(xpElem);
-  setTimeout(() => xpElem.remove(), 1500);
-}
-
-function triggerConfetti() {
-  for (let i = 0; i < 100; i++) {
-    confettiParticles.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * -20,
-      r: Math.random() * 6 + 2,
-      d: Math.random() * 5 + 1,
-      color: "hsl(" + Math.floor(Math.random() * 360) + ", 100%, 70%)",
-      tilt: Math.random() * 10 - 10,
-    });
-  }
-}
-
-function drawConfetti() {
-  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-  confettiParticles.forEach((p) => {
-    ctx.beginPath();
-    ctx.fillStyle = p.color;
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-    ctx.fill();
-  });
-  updateConfetti();
-}
-
-function updateConfetti() {
-  for (let i = 0; i < confettiParticles.length; i++) {
-    const p = confettiParticles[i];
-    p.y += p.d;
-    p.x += Math.sin(p.tilt) * 2;
-
-    if (p.y > confettiCanvas.height) {
-      confettiParticles.splice(i, 1);
-      i--;
-    }
-  }
-}
-
-function resizeCanvas() {
-  confettiCanvas.width = window.innerWidth;
-  confettiCanvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-setInterval(drawConfetti, 30);
+  u
