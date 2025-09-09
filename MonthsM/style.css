@@ -232,6 +232,14 @@ body {
 #goHomepageBtn:hover {
   background: #388e3c;
 }
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;       /* <-- important */
+  z-index: 100;
+}
 
 /* === Responsive === */
 @media (max-width: 500px) {
