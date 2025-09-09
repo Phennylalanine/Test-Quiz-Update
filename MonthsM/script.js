@@ -22,9 +22,10 @@ const nextBtn = document.getElementById("nextBtn");
 const tryAgainBtn = document.getElementById("tryAgainBtn");
 const choicesContainer = document.getElementById("choicesText");
 
-const pointsEl = document.getElementById("points");
-const comboEl = document.getElementById("combo");
-const levelEl = document.getElementById("level");
+// FIX: align with HTML IDs
+const pointsEl = document.getElementById("quizScore");
+const comboEl = document.getElementById("comboDisplay");
+const levelEl = document.getElementById("quizLevel");
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
 
@@ -39,6 +40,7 @@ const closeModalBtn = petModal.querySelector(".close");
 const petChoices = petModal.querySelectorAll(".pet-choice");
 const petModalTitle = document.getElementById("petModalTitle");
 const petModalDesc = document.getElementById("petModalDesc");
+const goHomepageBtn = document.getElementById("goHomepageBtn");
 
 // ----------------------
 // EVENT LISTENERS
@@ -66,6 +68,11 @@ tryAgainBtn.addEventListener("click", tryAgain);
 
 closeModalBtn.addEventListener("click", () => {
   petModal.style.display = "none";
+});
+
+goHomepageBtn.addEventListener("click", () => {
+  // navigate back to your homepage (adjust path if needed)
+  window.location.href = "index.html";
 });
 
 // ----------------------
@@ -97,7 +104,7 @@ function parseCSV(data) {
   const lines = data.trim().split("\n");
   return lines.slice(1).map((line) => {
     const [jp, en] = line.split(",");
-    return { jp: jp.trim(), en: en.trim() };
+    return { jp: (jp || "").trim(), en: (en || "").trim() };
   });
 }
 
@@ -112,26 +119,18 @@ function loadNextQuestion() {
 
   speak(question.en);
 
-  // Prepare answer options
+  // Prepare answer options (display-only, not clickable)
   const correctAnswer = question.en;
   const wrongAnswers = questions.filter(q => q.en !== correctAnswer).map(q => q.en);
   shuffleArray(wrongAnswers);
-
   const options = [correctAnswer, ...wrongAnswers.slice(0, 3)];
   shuffleArray(options);
 
-  // Display options as plain text (not clickable)
   choicesContainer.innerHTML = "<strong>Choices:</strong><br>";
   options.forEach(opt => {
     const span = document.createElement("span");
     span.textContent = opt;
     span.className = "choice-option";
-    span.style.padding = "5px 10px";
-    span.style.border = "1px solid #ccc";
-    span.style.borderRadius = "5px";
-    span.style.background = "#f9f9f9";
-    span.style.margin = "5px";
-    span.style.userSelect = "none";
     choicesContainer.appendChild(span);
   });
 
@@ -151,7 +150,7 @@ function checkAnswer() {
   if (answered) return;
   answered = true;
 
-  // FIX: normalize answers for comparison
+  // Normalize answers for comparison
   const userAnswer = answerInput.value.trim().toLowerCase();
   const correctAnswer = questions[currentQuestionIndex].en.trim().toLowerCase();
 
@@ -163,6 +162,7 @@ function checkAnswer() {
     combo++;
     score += 1;
 
+    // XP bonus rule (unchanged)
     const xpBonus = combo >= 15 && combo % 5 === 0 ? (combo / 5) - 1 : 1;
     gainXP(xpBonus);
     showFloatingXP(`+${xpBonus} XP`);
@@ -213,6 +213,10 @@ function gainXP(amount) {
 
   if (level > levelBefore) {
     triggerConfetti();
+    // keep homepage "overallLevel" in sync (export)
+    syncOverallLevel();
+    // re-check milestones to show modal if needed
+    checkPetEvolution();
   }
 
   saveProgress();
@@ -220,6 +224,7 @@ function gainXP(amount) {
 }
 
 function xpToNextLevel(currentLevel) {
+  // Level 1 -> need 3 XP; then increases by level each time (3, +2, +3, +4...)
   let xpRequired = 3;
   for (let i = 2; i <= currentLevel; i++) {
     xpRequired += i;
@@ -228,29 +233,45 @@ function xpToNextLevel(currentLevel) {
 }
 
 function updateStats() {
-  pointsEl.textContent = score;
-  comboEl.textContent = combo;
-  levelEl.textContent = level;
+  if (pointsEl) pointsEl.textContent = score;
+  if (comboEl) comboEl.textContent = combo;
+  if (levelEl) levelEl.textContent = level;
 
   const needed = xpToNextLevel(level);
-  const percent = (xp / needed) * 100;
-  xpBar.style.width = `${Math.min(percent, 100)}%`;
-  xpText.textContent = `${xp} / ${needed}`;
+  const percent = needed > 0 ? (xp / needed) * 100 : 0;
+  if (xpBar) xpBar.style.width = `${Math.min(percent, 100)}%`;
+  if (xpText) xpText.textContent = `${xp} / ${needed}`;
 }
 
 function saveProgress() {
-  localStorage.setItem("EventMxp", xp);
-  localStorage.setItem("EventMlevel", level);
+  localStorage.setItem("EventMxp", xp.toString());
+  localStorage.setItem("EventMlevel", level.toString());
+  // also export latest to the homepage aggregator
+  syncOverallLevel();
 }
 
 function loadProgress() {
   const savedXP = localStorage.getItem("EventMxp");
   const savedLevel = localStorage.getItem("EventMlevel");
 
-  if (savedXP !== null) xp = parseInt(savedXP, 10);
-  if (savedLevel !== null) level = parseInt(savedLevel, 10);
+  if (savedXP !== null) xp = parseInt(savedXP, 10) || 0;
+  if (savedLevel !== null) level = parseInt(savedLevel, 10) || 1;
 
+  // on load, ensure homepage overall is at least this level
+  syncOverallLevel();
   updateStats();
+}
+
+/**
+ * Export this quiz's level to a homepage-wide "overallLevel".
+ * If you plan to aggregate multiple quizzes, you can change this logic
+ * (e.g., sum across quizzes). For now we keep the MAX level.
+ */
+function syncOverallLevel() {
+  const currentOverall = parseInt(localStorage.getItem("overallLevel") || "0", 10);
+  if (level > currentOverall) {
+    localStorage.setItem("overallLevel", level.toString());
+  }
 }
 
 // ----------------------
@@ -305,8 +326,9 @@ setInterval(drawConfetti, 30);
 // SPEECH
 // ----------------------
 function speak(text) {
+  if (!text) return;
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-UK";
+  utterance.lang = "en-GB"; // more standard than "en-UK"
   speechSynthesis.speak(utterance);
 }
 
@@ -314,8 +336,11 @@ function showFloatingXP(text) {
   const xpElem = document.createElement("div");
   xpElem.textContent = text;
   xpElem.className = "floating-xp";
+  xpElem.style.position = "fixed";
   xpElem.style.left = `${Math.random() * 80 + 10}%`;
   xpElem.style.top = "50%";
+  xpElem.style.fontWeight = "700";
+  xpElem.style.pointerEvents = "none";
   document.body.appendChild(xpElem);
   setTimeout(() => xpElem.remove(), 1500);
 }
@@ -324,14 +349,15 @@ function showFloatingXP(text) {
 // PET EVOLUTION LOGIC
 // ----------------------
 function checkPetEvolution() {
-  const overallLevel = parseInt(localStorage.getItem("overallLevel")) || 0;
+  const overallLevel = parseInt(localStorage.getItem("overallLevel") || "0", 10);
   const petStage = localStorage.getItem("petStage") || "0"; // 0 = none, 1 = first evo, 2 = second evo
 
+  // First evolution choice at overall >= 3
   if (overallLevel >= 3 && petStage === "0") {
-    // First evolution choice
     petModalTitle.textContent = "🎉 Your Egg is Hatching!";
-    petModalDesc.textContent = "Choose your first evolution!";
-    petModal.style.display = "block";
+    petModalDesc.textContent = "Choose your first evolution and head back to the homepage!";
+    goHomepageBtn.style.display = "inline-block";
+    petModal.style.display = "flex";
 
     petChoices.forEach(choice => {
       choice.onclick = () => {
@@ -340,11 +366,13 @@ function checkPetEvolution() {
         petModal.style.display = "none";
       };
     });
-  } else if (overallLevel >= 6 && petStage === "1") {
-    // Second evolution choice
+  }
+  // Second evolution choice at overall >= 6
+  else if (overallLevel >= 6 && petStage === "1") {
     petModalTitle.textContent = "🌟 Your Pet is Evolving Again!";
-    petModalDesc.textContent = "Choose your second evolution!";
-    petModal.style.display = "block";
+    petModalDesc.textContent = "Choose your second evolution and head back to the homepage!";
+    goHomepageBtn.style.display = "inline-block";
+    petModal.style.display = "flex";
 
     petChoices.forEach(choice => {
       choice.onclick = () => {
@@ -353,6 +381,8 @@ function checkPetEvolution() {
         petModal.style.display = "none";
       };
     });
+  } else {
+    goHomepageBtn.style.display = "none";
   }
 }
 
