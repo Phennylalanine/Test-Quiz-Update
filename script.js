@@ -3,7 +3,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const quizData = [
     { key: "monthsSlevel", multiplier: 0.2 },
     { key: "EventSlevel", multiplier: 0.2 },
-    { key: "monthsMlevel", multiplier: 0.5 },
+    { key: "MonthsMlevel", multiplier: 0.5 },
     { key: "EventMlevel", multiplier: 0.5 },
   ];
 
