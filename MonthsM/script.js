@@ -240,7 +240,7 @@ function checkOverallLevelForPet() {
   const quizData = [
     { key: "monthsSlevel", multiplier: 0.2 },
     { key: "EventSlevel", multiplier: 0.2 },
-    { key: "monthsMlevel", multiplier: 0.5 },
+    { key: "MonthsMlevel", multiplier: 0.5 }, // FIX: capital M
     { key: "EventMlevel", multiplier: 0.5 },
   ];
 
@@ -251,19 +251,22 @@ function checkOverallLevelForPet() {
     }, 0)
   );
 
-  // First milestone: overall level 3
+  console.log("DEBUG overallLevel:", overallLevel);
+
+  // First milestone: overall level 3+
   if (!localStorage.getItem("petModalShown3") && overallLevel >= 3) {
     localStorage.setItem("petModalShown3", "true");
     alert("🎉 Overall Level 3 reached! Go to the Quiz Hub to see your egg!");
     window.location.href = "https://phennylalanine.github.io/Test-Quiz-Update/";
   }
-  // Second milestone: overall level 6
+  // Second milestone: overall level 6+
   else if (!localStorage.getItem("petModalShown6") && overallLevel >= 6) {
     localStorage.setItem("petModalShown6", "true");
     alert("🌟 Overall Level 6 reached! Go to the Quiz Hub to evolve your pet!");
     window.location.href = "https://phennylalanine.github.io/Test-Quiz-Update/";
   }
 }
+
 
 // ----------------------
 // CONFETTI
