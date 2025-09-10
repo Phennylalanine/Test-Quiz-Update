@@ -220,7 +220,7 @@ function updateStats() {
 
 function saveProgress() {
   localStorage.setItem("MonthsMxp", xp);
-  localStorage.setItem("MonthtsMlevel", level);
+  localStorage.setItem("MonthsMlevel", level);
 }
 
 function loadProgress() {
