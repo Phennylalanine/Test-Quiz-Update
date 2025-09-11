@@ -9,16 +9,36 @@ let questions = [];
 let currentQuestionIndex = 0;
 let answered = false;
 
-export function loadQuestions(qs) {
-  questions = shuffleArray(qs);
-  currentQuestionIndex = 0;
-  loadNextQuestion();
+// === Load questions from CSV ===
+export async function loadQuestions() {
+  try {
+    const response = await fetch('./questions.csv');
+    const text = await response.text();
+    questions = shuffleArray(parseCSV(text));
+    currentQuestionIndex = 0;
+  } catch (err) {
+    console.error("Failed to load questions.csv:", err);
+    showFeedback("⚠️ Could not load questions.");
+  }
+}
+
+// Simple CSV parser: jp,en
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  return lines.map(line => {
+    const [jp, en] = line.split(',');
+    return { jp: jp.trim(), en: en.trim() };
+  });
 }
 
 export function loadNextQuestion() {
-  if (currentQuestionIndex >= questions.length) {
-    showFeedback("🎉 Quiz finished!");
+  if (questions.length === 0) {
+    showFeedback("⚠️ No questions loaded!");
     return;
+  }
+
+  if (currentQuestionIndex >= questions.length) {
+    currentQuestionIndex = 0; // 👈 loop instead of finishing
   }
 
   const q = questions[currentQuestionIndex];
