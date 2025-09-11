@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function startQuiz() {
-  document.getElementById('startScreen').classList.add('hidden');
-  document.getElementById('quizScreen').classList.remove('hidden');
+  document.getElementById('startScreen').classList.add('active');
+  document.getElementById('quizScreen').classList.remove('active');
   loadNextQuestion();
 }
