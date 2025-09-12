@@ -9,22 +9,34 @@ let questions = [];
 let currentQuestionIndex = 0;
 let answered = false;
 
-// === Load questions from CSV ===
+// === Load questions from CSV (with fallback) ===
 export async function loadQuestions() {
   try {
     const response = await fetch('./questions.csv');
     const text = await response.text();
+
+    console.log("📥 CSV loaded:", text); // debug
     questions = shuffleArray(parseCSV(text));
-    currentQuestionIndex = 0;
+    console.log("✅ Parsed questions:", questions); // debug
   } catch (err) {
-    console.error("Failed to load questions.csv:", err);
-    showFeedback("⚠️ Could not load questions.");
+    console.error("⚠️ Failed to load questions.csv:", err);
+
+    // fallback questions if fetch fails
+    questions = shuffleArray([
+      { jp: "1月", en: "January" },
+      { jp: "2月", en: "February" },
+      { jp: "3月", en: "March" },
+    ]);
+
+    showFeedback("⚠️ Could not load questions.csv, using fallback set.");
   }
+
+  currentQuestionIndex = 0;
 }
 
-// Simple CSV parser: jp,en
+// === Simple CSV parser: jp,en ===
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().split('\n').slice(1); // skip header
   return lines.map(line => {
     const [jp, en] = line.split(',');
     return { jp: jp.trim(), en: en.trim() };
@@ -37,11 +49,14 @@ export function loadNextQuestion() {
     return;
   }
 
+  // Loop back to start when finished
   if (currentQuestionIndex >= questions.length) {
-    currentQuestionIndex = 0; // 👈 loop instead of finishing
+    currentQuestionIndex = 0;
   }
 
   const q = questions[currentQuestionIndex];
+  console.log("➡️ Loading question:", q); // debug
+
   showChoices(q);
   speak(q.jp);
   answered = false;
@@ -54,6 +69,8 @@ export function checkAnswer(userInput) {
   const q = questions[currentQuestionIndex];
   const userAnswer = (userInput || "").trim().toLowerCase();
   const correctAnswer = q.en.trim().toLowerCase();
+
+  console.log("✍️ Answer given:", userAnswer, " | Correct:", correctAnswer); // debug
 
   if (userAnswer === correctAnswer) {
     showFeedback("✅ Correct!");
