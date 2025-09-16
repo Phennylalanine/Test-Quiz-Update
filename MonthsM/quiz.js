@@ -58,7 +58,7 @@ export function loadNextQuestion() {
   console.log("➡️ Loading question:", q); // debug
 
   showChoices(q);
-  speak(q.jp);
+  speak(q.en);
   answered = false;
 }
 
