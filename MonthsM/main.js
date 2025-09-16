@@ -75,3 +75,24 @@ export function tryAgain() {
   answered = false;
   loadNextQuestion();
 }
+// === Hook up Start Button ===
+document.addEventListener("DOMContentLoaded", () => {
+  const startBtn = document.getElementById("startBtn");
+  const startScreen = document.getElementById("startScreen");
+  const quizScreen = document.getElementById("quizScreen");
+
+  if (startBtn) {
+    startBtn.addEventListener("click", async () => {
+      console.log("✅ Start button clicked");
+      await loadQuestions();
+
+      // Hide start screen, show quiz
+      startScreen.classList.remove("active");
+      startScreen.classList.add("hidden");
+      quizScreen.classList.add("active");
+
+      // Load the first question
+      loadNextQuestion();
+    });
+  }
+});
